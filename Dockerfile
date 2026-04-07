@@ -1,7 +1,8 @@
 FROM wordpress:latest
 
-# Fix Apache MPM conflict (both mpm_prefork and mpm_event can't be loaded)
-RUN a2dismod mpm_event 2>/dev/null; a2dismod mpm_worker 2>/dev/null; a2enmod mpm_prefork || true
+# Remove conflicting MPM module files directly (survives entrypoint)
+RUN rm -f /etc/apache2/mods-enabled/mpm_event.load /etc/apache2/mods-enabled/mpm_event.conf \
+    && rm -f /etc/apache2/mods-enabled/mpm_worker.load /etc/apache2/mods-enabled/mpm_worker.conf
 
 # Copy theme files into the WordPress themes directory
 COPY . /var/www/html/wp-content/themes/mono-archive/
@@ -16,5 +17,4 @@ RUN rm -f /var/www/html/wp-content/themes/mono-archive/Dockerfile \
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html/wp-content/themes/mono-archive
 
-# WordPress on Apache listens on port 80
 EXPOSE 80
